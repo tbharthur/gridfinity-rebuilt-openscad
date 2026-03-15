@@ -105,20 +105,21 @@ module slot(width, depth, height) {
 }
 
 // === STEPPED OUTER BODY ===
-// Two blocks at different heights with a clean step at the divider.
-// Front section (wall + slot1 + half divider) at front_wall_h.
-// Back section (half divider + slot2 + wall) at back_wall_h.
+// Front section at front_wall_h, back section at back_wall_h.
+// Back block starts at Y=0 (full depth) at front_wall_h, then the taller
+// back portion is added on top — avoids coplanar seam at divider midpoint
+// that caused diagonal triangulation artifacts.
 module outer_body() {
     body_bottom = base_h - floor_h;  // Z=4mm
     step_y = wall_t + slot_depth + wall_t / 2;  // Y position of step (middle of divider)
 
-    // Front section — lower
+    // Base block — full footprint at front wall height
     translate([0, 0, body_bottom])
-    cube([outer_x, step_y, front_wall_h + floor_h]);
+    cube([outer_x, outer_y, front_wall_h + floor_h]);
 
-    // Back section — taller
-    translate([0, step_y, body_bottom])
-    cube([outer_x, outer_y - step_y, back_wall_h + floor_h]);
+    // Back step — additional height from step_y to outer_y
+    translate([0, step_y, body_bottom + front_wall_h + floor_h])
+    cube([outer_x, outer_y - step_y, stagger]);
 }
 
 // === MAIN ASSEMBLY ===
