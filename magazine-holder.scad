@@ -104,19 +104,21 @@ module slot(width, depth, height) {
     square([width - 2*corner_r, depth - 2*corner_r], center = true);
 }
 
-// === STAGGERED OUTER BODY ===
+// === STEPPED OUTER BODY ===
+// Two blocks at different heights with a clean step at the divider.
+// Front section (wall + slot1 + half divider) at front_wall_h.
+// Back section (half divider + slot2 + wall) at back_wall_h.
 module outer_body() {
     body_bottom = base_h - floor_h;  // Z=4mm
+    step_y = wall_t + slot_depth + wall_t / 2;  // Y position of step (middle of divider)
 
-    hull() {
-        // Front slab (Y=0 edge, couch side) at front_wall_h
-        translate([0, 0, body_bottom])
-        cube([outer_x, 0.01, front_wall_h + floor_h]);
+    // Front section — lower
+    translate([0, 0, body_bottom])
+    cube([outer_x, step_y, front_wall_h + floor_h]);
 
-        // Back slab (Y=outer_y edge, wall side) at back_wall_h
-        translate([0, outer_y - 0.01, body_bottom])
-        cube([outer_x, 0.01, back_wall_h + floor_h]);
-    }
+    // Back section — taller
+    translate([0, step_y, body_bottom])
+    cube([outer_x, outer_y - step_y, back_wall_h + floor_h]);
 }
 
 // === MAIN ASSEMBLY ===
@@ -135,18 +137,23 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — intersected with outer body to follow sloped profile
-        // Minkowski sphere shifts cut down by lip_fillet, so compensate with +lip_fillet
-        intersection() {
-            outer_body();
+        // LIP RECESS — two separate cuts for front and back sections
+        // Front lip recess (at front_wall_h)
+        translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h])
+        minkowski() {
+            linear_extrude(lip_h + 1)
+            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                          outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+            sphere(r = lip_fillet, $fn = 32);
+        }
 
-            translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h + lip_fillet])
-            minkowski() {
-                linear_extrude(stagger + lip_h + 10)
-                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
-                sphere(r = lip_fillet, $fn = 32);
-            }
+        // Back lip recess (at back_wall_h)
+        translate([outer_x/2, outer_y/2, base_h + back_wall_h - lip_h])
+        minkowski() {
+            linear_extrude(lip_h + 1)
+            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                          outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+            sphere(r = lip_fillet, $fn = 32);
         }
     }
 }
