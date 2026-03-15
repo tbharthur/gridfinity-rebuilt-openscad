@@ -33,9 +33,10 @@ outer_x = grid_x * unit;       // 252mm
 outer_y = grid_y * unit;       // 84mm
 
 // === SLOT LAYOUT (Y-axis cross-section) ===
-// 5mm front wall + 34.5mm slot1 + 5mm divider + 34.5mm slot2 + 5mm back wall = 84mm
-wall_t = 5;                     // front wall, back wall, and divider thickness
-slot_depth = (outer_y - 3 * wall_t) / 2;  // 34.5mm each
+// 5mm front wall + 30mm slot1 + 14mm divider + 30mm slot2 + 5mm back wall = 84mm
+wall_t = 5;                     // front wall and back wall thickness
+div_t = 14;                     // divider thickness — wide enough for lip inset to wrap the step face
+slot_depth = (outer_y - 2 * wall_t - div_t) / 2;  // 30mm each
 
 // === SIDE WALLS (X-axis) ===
 side_wall_t = 8;                // side wall thickness at each end
@@ -46,8 +47,8 @@ slot1_floor = 0;                // front slot at base level
 slot2_floor = stagger;          // back slot raised 25mm
 
 // === SLOT Y POSITIONS (center of each slot) ===
-slot1_cy = wall_t + slot_depth / 2;                          // 5 + 17.25 = 22.25mm
-slot2_cy = wall_t + slot_depth + wall_t + slot_depth / 2;    // 5 + 34.5 + 5 + 17.25 = 61.75mm
+slot1_cy = wall_t + slot_depth / 2;                            // 5 + 15 = 20mm
+slot2_cy = wall_t + slot_depth + div_t + slot_depth / 2;       // 5 + 30 + 14 + 15 = 64mm
 
 // === GRIDFINITY BASE ===
 module gridfinity_base_single() {
@@ -111,7 +112,7 @@ module slot(width, depth, height) {
 // that caused diagonal triangulation artifacts.
 module outer_body() {
     body_bottom = base_h - floor_h;  // Z=4mm
-    step_y = wall_t + slot_depth + wall_t / 2;  // Y position of step (middle of divider)
+    step_y = wall_t + slot_depth + div_t / 2;  // Y position of step (middle of divider)
 
     // Base block — full footprint at front wall height
     translate([0, 0, body_bottom])
@@ -138,40 +139,29 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — lip on outer perimeter only, no lip on divider faces.
-        // Each section uses the full outer_y lip shape (so lip extends past divider
-        // = no lip border there), clipped to its body section.
-        // The Minkowski fillet rounds the lip termination at the step on the side walls.
-        step_y = wall_t + slot_depth + wall_t / 2;
+        // LIP RECESS — each section's lip includes its half of the divider,
+        // so the inset edge wraps around the step face. The thicker divider (14mm)
+        // gives the lip_inset (3mm) + lip_fillet (2mm) room to flow properly.
+        step_y = wall_t + slot_depth + div_t / 2;
+        front_section_y = step_y;                // 42mm (wall + slot + half divider)
+        back_section_y = outer_y - step_y;       // 42mm
 
-        // Front section lip — full-perimeter shape clipped to front body
-        intersection() {
-            // Clip to front section — extends lip_fillet past step to let
-            // Minkowski sphere create a rounded termination instead of sharp edge
-            translate([-1, -1, -1])
-            cube([outer_x + 2, step_y + lip_fillet, 999]);
-
-            translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h])
-            minkowski() {
-                linear_extrude(lip_h + 1)
-                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
-                sphere(r = lip_fillet, $fn = 32);
-            }
+        // Front section lip — sized to front section including half-divider
+        translate([outer_x/2, front_section_y/2, base_h + front_wall_h - lip_h])
+        minkowski() {
+            linear_extrude(lip_h + 1)
+            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                          front_section_y - 2*lip_inset - 2*lip_fillet], corner_r);
+            sphere(r = lip_fillet, $fn = 32);
         }
 
-        // Back section lip — full-perimeter shape clipped to back body
-        intersection() {
-            translate([-1, step_y - lip_fillet, -1])
-            cube([outer_x + 2, outer_y - step_y + lip_fillet + 1, 999]);
-
-            translate([outer_x/2, outer_y/2, base_h + back_wall_h - lip_h])
-            minkowski() {
-                linear_extrude(lip_h + 1)
-                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
-                sphere(r = lip_fillet, $fn = 32);
-            }
+        // Back section lip — sized to back section including half-divider
+        translate([outer_x/2, step_y + back_section_y/2, base_h + back_wall_h - lip_h])
+        minkowski() {
+            linear_extrude(lip_h + 1)
+            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                          back_section_y - 2*lip_inset - 2*lip_fillet], corner_r);
+            sphere(r = lip_fillet, $fn = 32);
         }
     }
 }
