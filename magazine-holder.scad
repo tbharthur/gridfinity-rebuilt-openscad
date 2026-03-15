@@ -122,7 +122,19 @@ module outer_body() {
 // === MAIN ASSEMBLY ===
 module magazine_holder() {
     gridfinity_bases();
-    outer_body();
+
+    difference() {
+        outer_body();
+
+        // SLOT 1 (front) — floor at base_h
+        // Use back_wall_h for height to guarantee full penetration through sloped body
+        translate([outer_x/2, slot1_cy, base_h])
+        slot(slot_length, slot_depth, back_wall_h + 1);
+
+        // SLOT 2 (back) — floor at base_h + 25mm
+        translate([outer_x/2, slot2_cy, base_h + slot2_floor])
+        slot(slot_length, slot_depth, back_wall_h + 1);
+    }
 }
 
 magazine_holder();
