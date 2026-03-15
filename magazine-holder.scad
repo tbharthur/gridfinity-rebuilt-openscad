@@ -104,4 +104,25 @@ module slot(width, depth, height) {
     square([width - 2*corner_r, depth - 2*corner_r], center = true);
 }
 
-gridfinity_bases();
+// === STAGGERED OUTER BODY ===
+module outer_body() {
+    body_bottom = base_h - floor_h;  // Z=4mm
+
+    hull() {
+        // Front slab (Y=0 edge, couch side) at front_wall_h
+        translate([0, 0, body_bottom])
+        cube([outer_x, 0.01, front_wall_h + floor_h]);
+
+        // Back slab (Y=outer_y edge, wall side) at back_wall_h
+        translate([0, outer_y - 0.01, body_bottom])
+        cube([outer_x, 0.01, back_wall_h + floor_h]);
+    }
+}
+
+// === MAIN ASSEMBLY ===
+module magazine_holder() {
+    gridfinity_bases();
+    outer_body();
+}
+
+magazine_holder();
