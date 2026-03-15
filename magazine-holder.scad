@@ -134,6 +134,20 @@ module magazine_holder() {
         // SLOT 2 (back) — floor at base_h + 25mm
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
+
+        // LIP RECESS — intersected with outer body to follow sloped profile
+        // Minkowski sphere shifts cut down by lip_fillet, so compensate with +lip_fillet
+        intersection() {
+            outer_body();
+
+            translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h + lip_fillet])
+            minkowski() {
+                linear_extrude(stagger + lip_h + 10)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+                sphere(r = lip_fillet, $fn = 32);
+            }
+        }
     }
 }
 
