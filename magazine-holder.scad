@@ -138,25 +138,49 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — single continuous lip around the entire outer perimeter.
-        // Hull of front-edge and back-edge recesses creates a smooth ramp on
-        // the side walls between the two heights. Minkowski sphere adds the
-        // fillet. Intersection with outer_body() clips to actual body.
-        // The divider interior is part of the recessed area (no raised rim).
+        // LIP RECESS — single continuous lip around the outer perimeter.
+        // Three hull sections create a stepped profile: flat front, short
+        // ramp across the divider, flat back. Minkowski sphere rounds all
+        // transitions. Intersection clips to body.
+        div_start = wall_t + slot_depth;        // 39.5mm — front edge of divider
+        div_end = div_start + wall_t;           // 44.5mm — back edge of divider
+        lip_rect_x = outer_x - 2*lip_inset - 2*lip_fillet;
+
         intersection() {
             outer_body();
 
             minkowski() {
-                hull() {
-                    // Front edge recess at front_wall_h
-                    translate([outer_x/2, lip_fillet + 0.005, base_h + front_wall_h - lip_h + lip_fillet])
-                    linear_extrude(lip_h + 50)
-                    square([outer_x - 2*lip_inset - 2*lip_fillet, 0.01], center=true);
+                union() {
+                    // Front section — flat at front_wall_h
+                    hull() {
+                        translate([outer_x/2, lip_fillet, base_h + front_wall_h - lip_h + lip_fillet])
+                        linear_extrude(lip_h + 50)
+                        square([lip_rect_x, 0.01], center=true);
 
-                    // Back edge recess at back_wall_h
-                    translate([outer_x/2, outer_y - lip_fillet - 0.005, base_h + back_wall_h - lip_h + lip_fillet])
-                    linear_extrude(lip_h + 50)
-                    square([outer_x - 2*lip_inset - 2*lip_fillet, 0.01], center=true);
+                        translate([outer_x/2, div_start, base_h + front_wall_h - lip_h + lip_fillet])
+                        linear_extrude(lip_h + 50)
+                        square([lip_rect_x, 0.01], center=true);
+                    }
+                    // Transition — ramp across divider (5mm)
+                    hull() {
+                        translate([outer_x/2, div_start, base_h + front_wall_h - lip_h + lip_fillet])
+                        linear_extrude(lip_h + 50)
+                        square([lip_rect_x, 0.01], center=true);
+
+                        translate([outer_x/2, div_end, base_h + back_wall_h - lip_h + lip_fillet])
+                        linear_extrude(lip_h + 50)
+                        square([lip_rect_x, 0.01], center=true);
+                    }
+                    // Back section — flat at back_wall_h
+                    hull() {
+                        translate([outer_x/2, div_end, base_h + back_wall_h - lip_h + lip_fillet])
+                        linear_extrude(lip_h + 50)
+                        square([lip_rect_x, 0.01], center=true);
+
+                        translate([outer_x/2, outer_y - lip_fillet, base_h + back_wall_h - lip_h + lip_fillet])
+                        linear_extrude(lip_h + 50)
+                        square([lip_rect_x, 0.01], center=true);
+                    }
                 }
                 sphere(r = lip_fillet, $fn = 32);
             }
