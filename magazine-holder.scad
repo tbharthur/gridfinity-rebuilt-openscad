@@ -137,23 +137,34 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — two separate cuts for front and back sections
-        // Front lip recess (at front_wall_h)
-        translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h])
-        minkowski() {
-            linear_extrude(lip_h + 1)
-            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                          outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
-            sphere(r = lip_fillet, $fn = 32);
+        // LIP RECESS — clipped to each section so front lip doesn't gouge back section
+        step_y = wall_t + slot_depth + wall_t / 2;
+
+        // Front lip recess (clipped to front section Y=0..step_y)
+        intersection() {
+            cube([outer_x, step_y, 999]);
+
+            translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h])
+            minkowski() {
+                linear_extrude(lip_h + 1)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+                sphere(r = lip_fillet, $fn = 32);
+            }
         }
 
-        // Back lip recess (at back_wall_h)
-        translate([outer_x/2, outer_y/2, base_h + back_wall_h - lip_h])
-        minkowski() {
-            linear_extrude(lip_h + 1)
-            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                          outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
-            sphere(r = lip_fillet, $fn = 32);
+        // Back lip recess (clipped to back section Y=step_y..outer_y)
+        intersection() {
+            translate([0, step_y, 0])
+            cube([outer_x, outer_y - step_y, 999]);
+
+            translate([outer_x/2, outer_y/2, base_h + back_wall_h - lip_h])
+            minkowski() {
+                linear_extrude(lip_h + 1)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+                sphere(r = lip_fillet, $fn = 32);
+            }
         }
     }
 }
