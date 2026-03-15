@@ -138,50 +138,38 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — single continuous lip around the outer perimeter.
-        // Three hull sections create a stepped profile: flat front, short
-        // ramp across the divider, flat back. Minkowski sphere rounds all
-        // transitions. Intersection clips to body.
-        div_start = wall_t + slot_depth;        // 39.5mm — front edge of divider
-        div_end = div_start + wall_t;           // 44.5mm — back edge of divider
-        lip_rect_x = outer_x - 2*lip_inset - 2*lip_fillet;
+        // LIP RECESS — lip on outer perimeter only, no lip on divider faces.
+        // Each section uses the full outer_y lip shape (so lip extends past divider
+        // = no lip border there), clipped to its body section.
+        // The Minkowski fillet rounds the lip termination at the step on the side walls.
+        step_y = wall_t + slot_depth + wall_t / 2;
 
+        // Front section lip — full-perimeter shape clipped to front body
         intersection() {
-            outer_body();
+            // Clip to front section — extends lip_fillet past step to let
+            // Minkowski sphere create a rounded termination instead of sharp edge
+            translate([-1, -1, -1])
+            cube([outer_x + 2, step_y + lip_fillet, 999]);
 
+            translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h])
             minkowski() {
-                union() {
-                    // Front section — flat at front_wall_h
-                    hull() {
-                        translate([outer_x/2, lip_fillet, base_h + front_wall_h - lip_h + lip_fillet])
-                        linear_extrude(lip_h + 50)
-                        square([lip_rect_x, 0.01], center=true);
+                linear_extrude(lip_h + 1)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+                sphere(r = lip_fillet, $fn = 32);
+            }
+        }
 
-                        translate([outer_x/2, div_start, base_h + front_wall_h - lip_h + lip_fillet])
-                        linear_extrude(lip_h + 50)
-                        square([lip_rect_x, 0.01], center=true);
-                    }
-                    // Transition — ramp across divider (5mm)
-                    hull() {
-                        translate([outer_x/2, div_start, base_h + front_wall_h - lip_h + lip_fillet])
-                        linear_extrude(lip_h + 50)
-                        square([lip_rect_x, 0.01], center=true);
+        // Back section lip — full-perimeter shape clipped to back body
+        intersection() {
+            translate([-1, step_y - lip_fillet, -1])
+            cube([outer_x + 2, outer_y - step_y + lip_fillet + 1, 999]);
 
-                        translate([outer_x/2, div_end, base_h + back_wall_h - lip_h + lip_fillet])
-                        linear_extrude(lip_h + 50)
-                        square([lip_rect_x, 0.01], center=true);
-                    }
-                    // Back section — flat at back_wall_h
-                    hull() {
-                        translate([outer_x/2, div_end, base_h + back_wall_h - lip_h + lip_fillet])
-                        linear_extrude(lip_h + 50)
-                        square([lip_rect_x, 0.01], center=true);
-
-                        translate([outer_x/2, outer_y - lip_fillet, base_h + back_wall_h - lip_h + lip_fillet])
-                        linear_extrude(lip_h + 50)
-                        square([lip_rect_x, 0.01], center=true);
-                    }
-                }
+            translate([outer_x/2, outer_y/2, base_h + back_wall_h - lip_h])
+            minkowski() {
+                linear_extrude(lip_h + 1)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
                 sphere(r = lip_fillet, $fn = 32);
             }
         }
