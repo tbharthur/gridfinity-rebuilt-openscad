@@ -138,30 +138,28 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — outer perimeter only, with each section's lip sized
-        // to its own footprint so the Minkowski fillet creates proper rounded
-        // corners everywhere (including where the lip meets the divider).
-        // The divider zone (Y=39.5 to 44.5) is flush — no lip treatment.
-        front_section_y = wall_t + slot_depth;           // 39.5mm (up to divider start)
-        back_section_start = front_section_y + wall_t;   // 44.5mm (after divider end)
-        back_section_y = outer_y - back_section_start;   // 39.5mm
+        // LIP RECESS — single continuous lip around the entire outer perimeter.
+        // Hull of front-edge and back-edge recesses creates a smooth ramp on
+        // the side walls between the two heights. Minkowski sphere adds the
+        // fillet. Intersection with outer_body() clips to actual body.
+        // The divider interior is part of the recessed area (no raised rim).
+        intersection() {
+            outer_body();
 
-        // Front section lip — perimeter of outer_x × front_section_y
-        translate([outer_x/2, front_section_y/2, base_h + front_wall_h - lip_h])
-        minkowski() {
-            linear_extrude(lip_h + 1)
-            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                          front_section_y - 2*lip_inset - 2*lip_fillet], corner_r);
-            sphere(r = lip_fillet, $fn = 32);
-        }
+            minkowski() {
+                hull() {
+                    // Front edge recess at front_wall_h
+                    translate([outer_x/2, lip_fillet + 0.005, base_h + front_wall_h - lip_h + lip_fillet])
+                    linear_extrude(lip_h + 50)
+                    square([outer_x - 2*lip_inset - 2*lip_fillet, 0.01], center=true);
 
-        // Back section lip — perimeter of outer_x × back_section_y
-        translate([outer_x/2, back_section_start + back_section_y/2, base_h + back_wall_h - lip_h])
-        minkowski() {
-            linear_extrude(lip_h + 1)
-            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                          back_section_y - 2*lip_inset - 2*lip_fillet], corner_r);
-            sphere(r = lip_fillet, $fn = 32);
+                    // Back edge recess at back_wall_h
+                    translate([outer_x/2, outer_y - lip_fillet - 0.005, base_h + back_wall_h - lip_h + lip_fillet])
+                    linear_extrude(lip_h + 50)
+                    square([outer_x - 2*lip_inset - 2*lip_fillet, 0.01], center=true);
+                }
+                sphere(r = lip_fillet, $fn = 32);
+            }
         }
     }
 }
