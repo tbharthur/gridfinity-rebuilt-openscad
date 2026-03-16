@@ -139,29 +139,38 @@ module magazine_holder() {
         translate([outer_x/2, slot2_cy, base_h + slot2_floor])
         slot(slot_length, slot_depth, back_wall_h + 1);
 
-        // LIP RECESS — each section's lip includes its half of the divider,
-        // so the inset edge wraps around the step face. The thicker divider (14mm)
-        // gives the lip_inset (3mm) + lip_fillet (2mm) room to flow properly.
+        // LIP RECESS — outer perimeter only, no lip on divider faces.
+        // Each section uses the full outer_y lip shape (lip extends past divider
+        // = no border there). Clipped to each section's body half at step_y.
+        // The clip point is buried inside the 14mm divider, not at a visible edge.
         step_y = wall_t + slot_depth + div_t / 2;
-        front_section_y = step_y;                // 42mm (wall + slot + half divider)
-        back_section_y = outer_y - step_y;       // 42mm
 
-        // Front section lip — sized to front section including half-divider
-        translate([outer_x/2, front_section_y/2, base_h + front_wall_h - lip_h])
-        minkowski() {
-            linear_extrude(lip_h + 1)
-            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                          front_section_y - 2*lip_inset - 2*lip_fillet], corner_r);
-            sphere(r = lip_fillet, $fn = 32);
+        // Front section lip — full-perimeter shape, clipped to front half
+        intersection() {
+            translate([-1, -1, -1])
+            cube([outer_x + 2, step_y + 1, 999]);
+
+            translate([outer_x/2, outer_y/2, base_h + front_wall_h - lip_h])
+            minkowski() {
+                linear_extrude(lip_h + 1)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+                sphere(r = lip_fillet, $fn = 32);
+            }
         }
 
-        // Back section lip — sized to back section including half-divider
-        translate([outer_x/2, step_y + back_section_y/2, base_h + back_wall_h - lip_h])
-        minkowski() {
-            linear_extrude(lip_h + 1)
-            rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
-                          back_section_y - 2*lip_inset - 2*lip_fillet], corner_r);
-            sphere(r = lip_fillet, $fn = 32);
+        // Back section lip — full-perimeter shape, clipped to back half
+        intersection() {
+            translate([-1, step_y, -1])
+            cube([outer_x + 2, outer_y - step_y + 1, 999]);
+
+            translate([outer_x/2, outer_y/2, base_h + back_wall_h - lip_h])
+            minkowski() {
+                linear_extrude(lip_h + 1)
+                rounded_rect([outer_x - 2*lip_inset - 2*lip_fillet,
+                              outer_y - 2*lip_inset - 2*lip_fillet], corner_r);
+                sphere(r = lip_fillet, $fn = 32);
+            }
         }
     }
 }
