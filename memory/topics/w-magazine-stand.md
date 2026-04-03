@@ -1,33 +1,49 @@
-# W Magazine Stand (Gridfinity)
+# W Magazine Stand
 
-Magazine/newspaper holder inspired by R&B Shelter rack, designed as a Gridfinity piece for the couch shelf.
+Gridfinity-integrated W-profile magazine/newspaper stand inspired by the R&B Shelter magazine rack.
 
-## Design
+## Specifications
 
-- **Grid:** 6×4 (252×168mm)
-- **Base:** 7mm Gridfinity base + 3mm solid floor = 10mm platform
-- **Center spine:** 217mm tall above platform, 4mm thick, centered at Y=84mm
-- **Outer walls:** Shorter than spine, angled outward at 12° lean
-- **Pocket floors:** Curved transitions from base to angled walls
-- **Top edges:** Bullnose (rounded) — no raised lip treatment
-- **Wall thickness:** 3-4mm
-- **Print orientation:** On its side — 252mm width prints vertically
-- **Storage:** ~3-5 magazines per pocket (2 pockets), matching R&B Shelter capacity
+- **Footprint:** 6×4 Gridfinity grid (252×168mm)
+- **Height:** ~227mm
+- **Platform:** 10mm (7mm base_h + 3mm floor_h)
+- **Profile:** W cross-section — center spine (4mm thick, 217mm tall) + two angled outer walls (12° lean)
+- **Pockets:** 2 outward-facing pockets, ~3-5 magazines each
+- **Top edges:** Bullnose (rounded), no raised lip
+- **Print orientation:** On its side (252mm width goes vertical)
+- **Build volume constraint:** Bambu A1 (256×256×256mm)
 
-## Spec & Plan
+## Bake-off (Apr 1-2)
 
-- Spec: `docs/superpowers/specs/2026-04-01-gridfinity-w-magazine-stand-design.md`
-- Plan: `docs/superpowers/plans/2026-04-01-gridfinity-w-magazine-stand.md`
+Claude and Codex each built the stand independently in isolated worktrees.
 
-## Branches
+| Version | Branch | Commits | Notes |
+|---------|--------|---------|-------|
+| Claude | `w-magazine-stand-claude` | 4 | Corrected inset from 18mm to ~38mm for 12° angle |
+| Codex | `w-magazine-stand-codex` | 1 | Built via Codex plugin after CLI stalled |
 
-| Branch | Builder | Notes |
-|--------|---------|-------|
-| `w-magazine-stand-claude` | Claude | 4 commits; corrected inset from 18mm to ~38mm for 12° angle |
-| `w-magazine-stand-codex` | Codex | 1 commit; built via Codex plugin (CLI stalled) |
+Both manifold, both 252×168×~227mm. Arthur chose the Codex version.
 
-Both manifold, 252×168×~227mm. Worktrees at `.claude/worktrees/w-mag-{claude,codex}/`.
+## Refinement (Apr 2)
+
+Two smoothing passes applied to the Codex worktree model:
+
+### Pass 1: Inner valley smoothing
+Replaced flat shoulder-and-arc valley polygon with a cubic blend starting tangent to the sloped wall and landing tangent to the center spine. Eliminates the abrupt wall-to-bottom transition visible in side view.
+
+### Pass 2: Broader rounding
+Outer walls reshaped to ease out of the base and taper into a fuller top cap. Center spine and inner-valley blend preserved. Applied after Arthur reviewed and approved pass 1.
+
+Both passes verified with focused geometry tests and manifold STL export.
+
+## Files
+
+- **Source (active):** `.claude/worktrees/w-mag-codex/w-magazine-stand.scad`
+- **Tests:** `.claude/worktrees/w-mag-codex/tests/test_w_magazine_stand.py`
+- **STL (final):** `~/Desktop/w-magazine-stand-codex-round2.stl`
+- **Spec:** `docs/superpowers/specs/2026-04-01-gridfinity-w-magazine-stand-design.md`
+- **Plan:** `docs/superpowers/plans/2026-04-01-gridfinity-w-magazine-stand.md`
 
 ## Status
 
-Bake-off complete (Apr 1-2). Renders sent to Discord. Awaiting Arthur's choice of direction.
+Approved and printing (Apr 2).
