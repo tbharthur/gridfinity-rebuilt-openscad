@@ -38,12 +38,13 @@ Both passes verified with focused geometry tests and manifold STL export.
 
 ## Files
 
-- **Source (active):** `.claude/worktrees/w-mag-codex/w-magazine-stand.scad`
-- **Tests:** `.claude/worktrees/w-mag-codex/tests/test_w_magazine_stand.py`
+- **Source (active):** `w-magazine-stand.scad`
+- **Tests:** `tests/test_w_magazine_stand.py`
 - **STL (final):** `~/Desktop/w-magazine-stand-codex-round2.stl`
 - **Spec:** `docs/superpowers/specs/2026-04-01-gridfinity-w-magazine-stand-design.md`
 - **Plan:** `docs/superpowers/plans/2026-04-01-gridfinity-w-magazine-stand.md`
 
 ## Status
 
-Approved and printing (Apr 2).
+Approved and printing (Apr 2). The selected Codex model was merged into `main`
+and both bake-off worktrees were removed on Aug 4.
